@@ -13,11 +13,11 @@ import (
 
 	"github.com/anexia-it/go-structconf/encoding/json"
 	"github.com/anexia-it/go-structconf/storage/file"
-	"github.com/anexia-it/go-structmapper"
 	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/anexia-it/go-structmapper.v1"
 )
 
 //go:generate mockgen -package=mocks -destination=mocks/encoding.go github.com/anexia-it/go-structconf/encoding Encoding

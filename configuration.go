@@ -7,8 +7,9 @@ import (
 
 	"github.com/anexia-it/go-structconf/encoding"
 	"github.com/anexia-it/go-structconf/storage"
-	structmapper "github.com/anexia-it/go-structmapper"
+
 	"github.com/hashicorp/go-multierror"
+	"gopkg.in/anexia-it/go-structmapper.v1"
 )
 
 // Default configuration options

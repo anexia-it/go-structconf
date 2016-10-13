@@ -1,14 +1,14 @@
-hash: 9be382e6455e23cf8bbea0cb809a9c898c20b9b3aefea6aa7ed4ff11cc7152d2
-updated: 2016-10-13T16:55:20.296828095+02:00
+hash: 1fb3908319451f6fedfd047a363f2a4c1b6ebf57a7f9610818c25900a23c4e5b
+updated: 2016-10-13T16:58:58.955664981+02:00
 imports:
-- name: github.com/anexia-it/go-structmapper
-  version: 1796ac2a2af9d6b7ee3334f1ee07f214e37951a2
 - name: github.com/golang/mock
   version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
   subpackages:
   - gomock
 - name: github.com/hashicorp/go-multierror
   version: 8c5f0ad9360406a3807ce7de6bc73269a91a6e51
+- name: gopkg.in/anexia-it/go-structmapper.v1
+  version: 1796ac2a2af9d6b7ee3334f1ee07f214e37951a2
 testImports:
 - name: github.com/hashicorp/errwrap
   version: ""
