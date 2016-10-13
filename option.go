@@ -5,7 +5,7 @@ import (
 	"github.com/anexia-it/go-structconf/storage"
 )
 
-// An option configures a Configuration option
+// Option defines the function type of Configuration options
 type Option func(*Configuration) error
 
 // OptionStorage configures a configuration storage
