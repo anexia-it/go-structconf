@@ -14,6 +14,9 @@ branches:
 before_install:
   - go get golang.org/x/tools/cmd/cover
 
+install:
+  - make generate
+
 script:
   - GO15VENDOREXPERIMENT=1 go test -v -coverprofile=coverage.txt -covermode=atomic
 
