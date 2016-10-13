@@ -7,32 +7,13 @@ import (
 	"strings"
 )
 
-// generateMapFromStruct takes a struct and encoding and generates a map[string]interface{}
-// from that struct.
-func generateMapFromStruct(s interface{}, e Encoding) (map[string]interface{}, error) {
-	// Marshal to byte array
-	data, err := e.MarshalFrom(s)
-	if err != nil {
-		return nil, err
-	}
-
-	// Unmarshal from byte array to map
-	m := make(map[string]interface{})
-
-	if err := e.UnmarshalTo(data, m); err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
-// mergeMaps merges the passed maps
+// MergeMaps merges the passed maps
 // The resulting map contains all keys that existed in either of the passed maps.
 // For keys that exist in both maps, the value from the "b" map takes precedence,
 // iff it is not a zero-value.
 // Keys that are present in both maps are expected to be of the same type. If this is not the case,
 // an error will be returned.
-func mergeMaps(a, b map[string]interface{}, prefix ...string) (map[string]interface{}, error) {
+func MergeMaps(a, b map[string]interface{}, prefix ...string) (map[string]interface{}, error) {
 	// Allocate the resulting map with a sane default
 	m := make(map[string]interface{}, int(math.Max(float64(len(a)), float64(len(b)))))
 
@@ -87,7 +68,7 @@ func mergeMaps(a, b map[string]interface{}, prefix ...string) (map[string]interf
 		// If these are map[string]interface{} instances, we start a recursion.
 		if mapA, ok := valueA.(map[string]interface{}); ok {
 			mapB := valueB.(map[string]interface{})
-			mergedMap, err := mergeMaps(mapA, mapB, append(prefix, key)...)
+			mergedMap, err := MergeMaps(mapA, mapB, append(prefix, key)...)
 			if err != nil {
 				return nil, err
 			}

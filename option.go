@@ -1,10 +1,15 @@
 package structconf
 
+import (
+	"github.com/anexia-it/go-structconf/encoding"
+	"github.com/anexia-it/go-structconf/storage"
+)
+
 // An option configures a Configuration option
 type Option func(*Configuration) error
 
 // OptionStorage configures a configuration storage
-func OptionStorage(storage Storage) Option {
+func OptionStorage(storage storage.Storage) Option {
 	return func(c *Configuration) error {
 		c.storage = storage
 		return nil
@@ -12,9 +17,17 @@ func OptionStorage(storage Storage) Option {
 }
 
 // OptionEncoding configures a configuration encoding
-func OptionEncoding(encoding Encoding) Option {
+func OptionEncoding(encoding encoding.Encoding) Option {
 	return func(c *Configuration) error {
 		c.encoding = encoding
+		return nil
+	}
+}
+
+// OptionTagName configures the tag names used when encoding the config struct
+func OptionTagName(tagName string) Option {
+	return func(c *Configuration) error {
+		c.tagName = tagName
 		return nil
 	}
 }
@@ -24,9 +37,7 @@ func OptionEncoding(encoding Encoding) Option {
 // return an error if no encoding was configured
 func OptionDefaults(defaults interface{}) Option {
 	return func(c *Configuration) error {
-		if c.encoding == nil {
-			return ErrEncodingNotConfigured
-		}
-		return c.SetDefaults(defaults)
+		c.pendingDefaults = defaults
+		return nil
 	}
 }

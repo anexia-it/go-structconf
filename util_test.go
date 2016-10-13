@@ -13,7 +13,7 @@ func TestMergeMapsBEmpty(t *testing.T) {
 	}
 	b := map[string]interface{}{}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.NoError(t, err)
 	require.EqualValues(t, a, result)
 }
@@ -37,7 +37,7 @@ func TestMergeMapsDifferentKeys(t *testing.T) {
 		expectedResult[k] = v
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.NoError(t, err)
 	require.EqualValues(t, expectedResult, result)
 }
@@ -55,7 +55,7 @@ func TestMergeMapsNilValueA(t *testing.T) {
 		"c": "c",
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.NoError(t, err)
 	require.EqualValues(t, b, result)
 }
@@ -73,7 +73,7 @@ func TestMergeMapsNilValueB(t *testing.T) {
 		"c": "",
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.NoError(t, err)
 	require.EqualValues(t, a, result)
 }
@@ -86,7 +86,7 @@ func TestMergeMapsKindMismatch(t *testing.T) {
 		"a": "a",
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.Nil(t, result)
 	require.EqualError(t, err, "Kind mismatch for key a: int != string")
 }
@@ -102,7 +102,7 @@ func TestMergeMapsTypeMismatch(t *testing.T) {
 		"a": &str,
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.Nil(t, result)
 	require.EqualError(t, err, "Type mismatch for key a: *int != *string")
 }
@@ -131,7 +131,7 @@ func TestMergeMapsRecursion(t *testing.T) {
 		},
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.NoError(t, err)
 	require.EqualValues(t, expectedResult, result)
 }
@@ -151,7 +151,7 @@ func TestMergeMapsRecursionError(t *testing.T) {
 		},
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.Nil(t, result)
 	require.EqualError(t, err, "Kind mismatch for key m.c: int != string")
 }
@@ -165,7 +165,7 @@ func TestMergeMapsDefaultHandling(t *testing.T) {
 		"a": 2,
 	}
 
-	result, err := mergeMaps(a, b)
+	result, err := MergeMaps(a, b)
 	require.NoError(t, err)
 	require.EqualValues(t, b, result)
 }

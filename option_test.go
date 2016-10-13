@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//go:generate mockgen -package=mocks -destination=mocks/storage.go github.com/anexia-it/go-structconf Storage
+//go:generate mockgen -package=mocks -destination=mocks/storage.go github.com/anexia-it/go-structconf/storage Storage
 
 func TestOptionStorage(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -16,7 +16,7 @@ func TestOptionStorage(t *testing.T) {
 
 	storage := mocks.NewMockStorage(ctrl)
 
-	c := &SimpleTestConfig{}
+	c := &TestConfigSimple{}
 
 	conf, err := NewConfiguration(c, OptionStorage(storage))
 	require.NoError(t, err)
@@ -30,7 +30,7 @@ func TestOptionEncoding(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	c := &SimpleTestConfig{}
+	c := &TestConfigSimple{}
 
 	encoding := mocks.NewMockEncoding(ctrl)
 	conf, err := NewConfiguration(c, OptionEncoding(encoding))
@@ -41,19 +41,17 @@ func TestOptionEncoding(t *testing.T) {
 }
 
 func TestOptionDefaults(t *testing.T) {
-	// TODO: implement me once OptionEncoding is not required anymore SetDefaults
-	//ctrl := gomock.NewController(t)
-	//defer ctrl.Finish()
-	//
-	//c := &SimpleTestConfig{}
-	////defaults := SimpleTestConfig{
-	////	Test: "test",
-	////}
-	//
-	//encoding := mocks.NewMockEncoding(ctrl)
-	//conf, err := NewConfiguration(c, OptionEncoding(encoding), OptionDefaults(nil))
-	//require.NoError(t, err)
-	//require.NotNil(t, conf)
-	//require.EqualValues(t, c, conf.config)
-	//require.EqualValues(t, encoding, conf.encoding)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	c := &TestConfigSimple{}
+	defaults := &TestConfigSimple{
+		Test: "test",
+	}
+
+	conf, err := NewConfiguration(c, OptionDefaults(defaults))
+	require.NoError(t, err)
+	require.NotNil(t, conf)
+	// Check if the defaults were correctly applied to the config
+	require.EqualValues(t, defaults, conf.config)
 }
