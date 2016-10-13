@@ -53,6 +53,7 @@ func (c *Configuration) mergeAndSet(a, b map[string]interface{}) error {
 	return err
 }
 
+// SetDefaults sets the defaults value for the configuration
 func (c *Configuration) SetDefaults(defaults interface{}) error {
 	// Defaults must be set to a non-nil value
 	if defaults == nil {
@@ -107,11 +108,15 @@ func (c *Configuration) Load() error {
 	}
 
 	// Create a map from the current configuration
-	currentMap, err := c.mapper.ToMap(c.config)
+	currentMap, mapErr := c.mapper.ToMap(c.config)
+	if mapErr != nil {
+		return mapErr
+	}
 
 	return c.mergeAndSet(currentMap, loadedMap)
 }
 
+// Save writes the configuration to the underlying storage
 func (c *Configuration) Save() error {
 	// Check if encoding and storage were configured
 	if c.encoding == nil {
