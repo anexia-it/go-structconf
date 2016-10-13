@@ -1,3 +1,4 @@
+// Package storage provides common functionality for go-structconf storages
 package storage
 
 // Storage defines the interface configuration storages implement

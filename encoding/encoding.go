@@ -1,3 +1,4 @@
+// Package encoding provides common functionality for go-structconf encodings
 package encoding
 
 // Encoding defines the configuration encoding interface
