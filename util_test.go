@@ -169,3 +169,29 @@ func TestMergeMapsDefaultHandling(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, b, result)
 }
+
+func TestMergeMapsMapStringInterfaceMapInterfaceInterface(t *testing.T) {
+	a := map[string]interface{}{
+		"a": map[string]interface{}{
+			"b": 1,
+		},
+	}
+
+	b := map[string]interface{}{
+		"a": map[interface{}]interface{}{
+			"b": 2,
+		},
+	}
+
+	expected := map[string]interface{}{
+		"a": map[string]interface{}{
+			"b": 2,
+		},
+	}
+
+	require.NotPanics(t, func() {
+		result, err := MergeMaps(a, b)
+		require.NoError(t, err)
+		require.EqualValues(t, expected, result)
+	})
+}
