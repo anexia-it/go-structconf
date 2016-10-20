@@ -59,7 +59,7 @@ func MergeMaps(a, b map[string]interface{}, prefix ...string) (map[string]interf
 		if valA.Kind() != valB.Kind() {
 			return nil, fmt.Errorf("Kind mismatch for key %s: %s != %s",
 				strings.Join(append(prefix, key), "."), valA.Kind().String(), valB.Kind().String())
-		} else if valA.Type() != valB.Type() {
+		} else if valA.Type() != reflect.TypeOf(map[string]interface{}{}) && valB.Type() != reflect.TypeOf(map[interface{}]interface{}{}) && valA.Type() != valB.Type() {
 			return nil, fmt.Errorf("Type mismatch for key %s: %s != %s",
 				strings.Join(append(prefix, key), "."), valA.Type().String(), valB.Type().String())
 		}
@@ -67,7 +67,19 @@ func MergeMaps(a, b map[string]interface{}, prefix ...string) (map[string]interf
 		// At this point we are sure that both values are of the same type.
 		// If these are map[string]interface{} instances, we start a recursion.
 		if mapA, ok := valueA.(map[string]interface{}); ok {
-			mapB := valueB.(map[string]interface{})
+			mapB, ok := valueB.(map[string]interface{})
+			if !ok {
+				if genericB, ok := valueB.(map[interface{}]interface{}); ok {
+					mapB = make(map[string]interface{}, len(genericB))
+					for key, value := range genericB {
+						switch key := key.(type) {
+						case string:
+							mapB[key] = value
+						}
+					}
+				}
+			}
+
 			mergedMap, err := MergeMaps(mapA, mapB, append(prefix, key)...)
 			if err != nil {
 				return nil, err
