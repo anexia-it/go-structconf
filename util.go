@@ -30,7 +30,6 @@ var mergeUnsupportedKinds = []reflect.Kind{
 	reflect.Chan,
 	reflect.Func,
 	reflect.Interface,
-	reflect.Ptr, // TODO: supporting reflect.PTR is possible, but not needed for now
 	reflect.UnsafePointer,
 }
 
@@ -79,17 +78,7 @@ func MergeValues(a, b interface{}) (interface{}, error) {
 
 	// Special case: both values are pointers
 	if kindA == reflect.Ptr && kindA == kindB {
-		merged, err := MergeValues(valueA.Elem().Interface(), valueB.Elem().Interface())
-		if err != nil {
-			return nil, err
-		} else if merged == nil {
-			return nil, nil
-		}
-
-		// Ensure we do return a pointer again
-		res := reflect.New(valueA.Type().Elem())
-		res.Elem().Set(reflect.ValueOf(merged))
-		return res.Interface(), nil
+		return mergePointers(valueA, valueB)
 	}
 
 	// Check if both kinds are supported for merging
@@ -116,6 +105,22 @@ func MergeValues(a, b interface{}) (interface{}, error) {
 	return convertScalarValues(valueA, valueB)
 }
 
+// mergePointers handles merging of pointer values
+func mergePointers(a reflect.Value, b reflect.Value) (interface{}, error) {
+	merged, err := MergeValues(a.Elem().Interface(), b.Elem().Interface())
+	if err != nil {
+		return nil, err
+	} else if merged == nil {
+		return nil, nil
+	}
+
+	// Ensure we do return a pointer again
+	res := reflect.New(a.Type().Elem())
+	res.Elem().Set(reflect.ValueOf(merged))
+	return res.Interface(), nil
+}
+
+// mergeMaps handles merging of map values
 func mergeMaps(a reflect.Value, b reflect.Value) (m interface{}, err error) {
 	mValue := reflect.MakeMap(a.Type())
 	var sampleKeyValue reflect.Value
