@@ -1,5 +1,5 @@
 hash: 2cb056c5a84fa98190875f3b9275f2671f4cb9093a1696c2ee295d0054744e9b
-updated: 2016-10-20T16:11:31.486809392+02:00
+updated: 2016-10-20T17:27:32.41074582+02:00
 imports:
 - name: github.com/golang/mock
   version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
@@ -10,7 +10,7 @@ imports:
 - name: github.com/hashicorp/go-multierror
   version: 8c5f0ad9360406a3807ce7de6bc73269a91a6e51
 - name: gopkg.in/anexia-it/go-structmapper.v1
-  version: b4ac7a461754e7a13ceab6d7ae8eba92a3eea0f4
+  version: 41a3aa32c9eef49b2c03b8698a470fdb7301595c
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
 testImports:

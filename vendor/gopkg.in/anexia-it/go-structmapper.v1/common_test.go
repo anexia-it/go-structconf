@@ -52,6 +52,29 @@ type mapperTestStructAnonymousOuter struct {
 	A string `mapper:"a_outer"`
 }
 
+type mapperTestStructMapStringString struct {
+	A string
+	B map[string]string
+}
+
+type mapperTestStructNestedStructSlice struct {
+	A string
+	B []mapperTestStructSimple
+}
+
+type mapperTestStructNestedNestedStructSlice struct {
+	A string
+	B mapperTestStructNestedStructSlice
+}
+
+type mapperTestStructConvertibleSource struct {
+	A int
+}
+
+type mapperTestStructConvertibleDest struct {
+	A uint64
+}
+
 func TestMapper_Roundtrip_Map(t *testing.T) {
 	// Initialize Mapper without options
 	sm, err := structmapper.NewMapper()
@@ -272,4 +295,133 @@ func TestMapper_Roundtrip_Anonymous(t *testing.T) {
 	require.NoError(t, sm.ToStruct(m, target))
 
 	require.EqualValues(t, source, target)
+}
+
+func TestMapper_Roundtrip_MapStringString(t *testing.T) {
+	// Initialize Mapper without options
+	sm, err := structmapper.NewMapper()
+	require.NoError(t, err)
+	require.NotNil(t, sm)
+
+	source := &mapperTestStructMapStringString{
+		A: "test0",
+		B: map[string]string{
+			"b0": "1",
+			"b1": "2",
+		},
+	}
+
+	target := &mapperTestStructMapStringString{}
+
+	m, err := sm.ToMap(source)
+	require.NoError(t, err)
+	require.NotNil(t, m)
+
+	require.NoError(t, sm.ToStruct(m, target))
+
+	require.EqualValues(t, source, target)
+}
+
+func TestMapper_Roundtrip_NestedStructSlice(t *testing.T) {
+	// Initialize Mapper without options
+	sm, err := structmapper.NewMapper()
+	require.NoError(t, err)
+	require.NotNil(t, sm)
+
+	source := &mapperTestStructNestedStructSlice{
+		A: "test0",
+		B: []mapperTestStructSimple{
+			{
+				A: "test1",
+			},
+			{
+				A: "test2",
+			},
+		},
+	}
+
+	target := &mapperTestStructNestedStructSlice{}
+
+	m, err := sm.ToMap(source)
+	require.NoError(t, err)
+	require.NotNil(t, m)
+
+	require.NoError(t, sm.ToStruct(m, target))
+
+	require.EqualValues(t, source, target)
+}
+
+// mapperTestStructNestedNestedStructSlice
+
+func TestMapper_Roundtrip_NestedNestedStructSlice(t *testing.T) {
+	// Initialize Mapper without options
+	sm, err := structmapper.NewMapper()
+	require.NoError(t, err)
+	require.NotNil(t, sm)
+
+	source := &mapperTestStructNestedNestedStructSlice{
+		A: "test0",
+		B: mapperTestStructNestedStructSlice{
+			A: "test1",
+			B: []mapperTestStructSimple{
+				{
+					A: "test1",
+				},
+				{
+					A: "test2",
+				},
+			},
+		},
+	}
+
+	target := &mapperTestStructNestedNestedStructSlice{}
+
+	m, err := sm.ToMap(source)
+	require.NoError(t, err)
+	require.NotNil(t, m)
+
+	require.NoError(t, sm.ToStruct(m, target))
+
+	require.EqualValues(t, source, target)
+}
+
+func TestMapper_Roundtrip_Convertible(t *testing.T) {
+	// Initialize Mapper without options
+	sm, err := structmapper.NewMapper()
+	require.NoError(t, err)
+	require.NotNil(t, sm)
+
+	source := &mapperTestStructConvertibleSource{
+		A: 123456,
+	}
+
+	target := &mapperTestStructConvertibleDest{}
+
+	m, err := sm.ToMap(source)
+	require.NoError(t, err)
+	require.NotNil(t, m)
+
+	require.NoError(t, sm.ToStruct(m, target))
+
+	require.EqualValues(t, uint64(source.A), target.A)
+}
+
+func TestMapper_Roundtrip_MapInterfaceInterface(t *testing.T) {
+	// Initialize Mapper without options
+	sm, err := structmapper.NewMapper()
+	require.NoError(t, err)
+	require.NotNil(t, sm)
+
+	target := &mapperTestStructNested{}
+	source := &mapperTestStructNested{
+		E: &mapperTestStructSimple{
+			A: "test",
+		},
+	}
+
+	m, err := sm.ToMap(source)
+	require.NoError(t, err)
+	require.NotNil(t, m)
+
+	require.NoError(t, sm.ToStruct(m, target))
 }
