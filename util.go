@@ -2,9 +2,9 @@ package structconf
 
 import (
 	"fmt"
-	"math"
 	"reflect"
-	"strings"
+
+	"github.com/hashicorp/go-multierror"
 )
 
 // MergeMaps merges the passed maps
@@ -13,84 +13,185 @@ import (
 // iff it is not a zero-value.
 // Keys that are present in both maps are expected to be of the same type. If this is not the case,
 // an error will be returned.
-func MergeMaps(a, b map[string]interface{}, prefix ...string) (map[string]interface{}, error) {
-	// Allocate the resulting map with a sane default
-	m := make(map[string]interface{}, int(math.Max(float64(len(a)), float64(len(b)))))
-
-	// Iterate over map a and set all values in result map
-	for key, value := range a {
-		// Copy only if value is non-nil
-		m[key] = value
+func MergeMaps(a, b map[string]interface{}) (map[string]interface{}, error) {
+	merged, err := mergeMaps(reflect.ValueOf(a), reflect.ValueOf(b))
+	if err != nil {
+		return nil, err
 	}
 
-	// Now merge in the values from map b
-	for key, valueB := range b {
-		valB := reflect.ValueOf(valueB)
-		valueA, exists := m[key]
+	// As the inputs are map[string]interface{} values, the result will always
+	// be a map[string]interface{}, which means we can cast here without any checks
+	return merged.(map[string]interface{}), nil
+}
 
-		// If the key does not yet exist, or the value in the merged map is nil,
-		// just copy over the new value
-		if !exists || valueA == nil {
-			m[key] = valueB
-			continue
+// reflect.Kind values which cannot be merged
+var mergeUnsupportedKinds = []reflect.Kind{
+	reflect.Invalid,
+	reflect.Chan,
+	reflect.Func,
+	reflect.Interface,
+	reflect.Ptr, // TODO: supporting reflect.PTR is possible, but not needed for now
+	reflect.UnsafePointer,
+}
+
+// isMergeUnsupportedKind checks if a given kind is unsupported for merging
+func isMergeUnsupportedKind(k reflect.Kind) error {
+	for _, unsupportedKind := range mergeUnsupportedKinds {
+		if unsupportedKind == k {
+			return fmt.Errorf("Kind %s unsupported for merging", k.String())
 		}
+	}
+	return nil
+}
 
-		// If the value in B is nil, keep the value from A
-		if valueB == nil {
-			continue
-		}
-
-		valA := reflect.ValueOf(valueA)
-
-		// Check if the A value is zero-ish, in which case we use the value from B
-		if reflect.DeepEqual(valueA, reflect.Zero(valA.Type()).Interface()) {
-			m[key] = valueB
-			continue
-		}
-
-		// Check if the B value is zero-ish, in which case we skip further processing,
-		// and keep the value from A
-		if reflect.DeepEqual(valueB, reflect.Zero(valB.Type()).Interface()) {
-			continue
-		}
-
-		// Check if both values are of the same
-
-		if valA.Kind() != valB.Kind() {
-			return nil, fmt.Errorf("Kind mismatch for key %s: %s != %s",
-				strings.Join(append(prefix, key), "."), valA.Kind().String(), valB.Kind().String())
-		} else if valA.Type() != reflect.TypeOf(map[string]interface{}{}) && valB.Type() != reflect.TypeOf(map[interface{}]interface{}{}) && valA.Type() != valB.Type() {
-			return nil, fmt.Errorf("Type mismatch for key %s: %s != %s",
-				strings.Join(append(prefix, key), "."), valA.Type().String(), valB.Type().String())
-		}
-
-		// At this point we are sure that both values are of the same type.
-		// If these are map[string]interface{} instances, we start a recursion.
-		if mapA, ok := valueA.(map[string]interface{}); ok {
-			mapB, ok := valueB.(map[string]interface{})
-			if !ok {
-				if genericB, ok := valueB.(map[interface{}]interface{}); ok {
-					mapB = make(map[string]interface{}, len(genericB))
-					for key, value := range genericB {
-						switch key := key.(type) {
-						case string:
-							mapB[key] = value
-						}
-					}
-				}
-			}
-
-			mergedMap, err := MergeMaps(mapA, mapB, append(prefix, key)...)
-			if err != nil {
-				return nil, err
-			}
-			m[key] = mergedMap
-			continue
-		}
-
-		// In the default case, use the value from B
-		m[key] = valueB
+// MergeValues "merges" two values
+//
+// The internal logic is as follows:
+//
+// - If b is zero, return a
+// - If a is zero, return b
+// - If both values are non-zero and scalar types, convert b with a's type, if possible.
+// - If both values are non-zero and slices or arrays, return b
+// - If both values are non-zero and maps, merge each element of the map using the above logic
+func MergeValues(a, b interface{}) (interface{}, error) {
+	// Simple case: a is nil
+	if a == nil {
+		return b, nil
 	}
 
-	return m, nil
+	// Simple case: b is nil
+	if b == nil {
+		return a, nil
+	}
+
+	valueB := reflect.ValueOf(b)
+
+	// Simple case: b is zero
+	if reflect.DeepEqual(b, reflect.Zero(valueB.Type()).Interface()) {
+		return a, nil
+	}
+
+	valueA := reflect.ValueOf(a)
+
+	// At this point both a and b are non-nil and non-zero
+	kindA := valueA.Kind()
+	kindB := valueB.Kind()
+
+	// Special case: both values are pointers
+	if kindA == reflect.Ptr && kindA == kindB {
+		merged, err := MergeValues(valueA.Elem().Interface(), valueB.Elem().Interface())
+		if err != nil {
+			return nil, err
+		} else if merged == nil {
+			return nil, nil
+		}
+
+		// Ensure we do return a pointer again
+		res := reflect.New(valueA.Type().Elem())
+		res.Elem().Set(reflect.ValueOf(merged))
+		return res.Interface(), nil
+	}
+
+	// Check if both kinds are supported for merging
+	if err := isMergeUnsupportedKind(kindA); err != nil {
+		return nil, err
+	}
+
+	if err := isMergeUnsupportedKind(kindB); err != nil {
+		return nil, err
+	}
+
+	// Special case: both are maps
+	if kindA == reflect.Map && kindA == kindB {
+		// Special case: maps need merging
+		return mergeMaps(valueA, valueB)
+	}
+
+	// Special case: both are slices or arrays
+	if kindA == kindB && (kindA == reflect.Slice || kindA == reflect.Array) {
+		return mergeSlices(valueA, valueB)
+	}
+
+	// Finally: try merging scalar values
+	return convertScalarValues(valueA, valueB)
+}
+
+func mergeMaps(a reflect.Value, b reflect.Value) (m interface{}, err error) {
+	mValue := reflect.MakeMap(a.Type())
+	var sampleKeyValue reflect.Value
+
+	// Initialize result map with all values from a
+	for _, k := range a.MapKeys() {
+		mValue.SetMapIndex(k, a.MapIndex(k))
+		sampleKeyValue = k
+	}
+
+	// Now iterate over all keys from b and set them on our result map
+	for _, k := range b.MapKeys() {
+		// Convert key
+		convertedKeyIntf, convertErr := convertScalarValues(sampleKeyValue, k)
+		if convertErr != nil {
+			err = multierror.Append(err, multierror.Prefix(convertErr, fmt.Sprintf("key %v:", k.Interface())))
+			continue
+		}
+
+		key := reflect.ValueOf(convertedKeyIntf)
+		v := b.MapIndex(k)
+
+		// Check if key exists
+		existingV := mValue.MapIndex(key)
+		if !existingV.IsValid() {
+			// Key does not exist.
+			mValue.SetMapIndex(key, v)
+			continue
+		}
+
+		// The key does already exist, in which case we need to merge the existing value and the
+		// value from b
+		mergedV, mergeErr := MergeValues(existingV.Interface(), v.Interface())
+		if mergeErr != nil {
+			err = multierror.Append(err, multierror.Prefix(mergeErr, fmt.Sprintf("key %v:", convertedKeyIntf)))
+			continue
+		}
+		mValue.SetMapIndex(key, reflect.ValueOf(mergedV))
+	}
+
+	if err != nil {
+		return
+	}
+	m = mValue.Interface()
+	return
+}
+
+// mergeSlices merges two slices
+//
+// The logic is very simple: if b is not empty return b, otherwise, return a
+func mergeSlices(a reflect.Value, b reflect.Value) (interface{}, error) {
+	if b.Len() != 0 {
+		return b.Interface(), nil
+	}
+
+	return a.Interface(), nil
+}
+
+// mergeScalarValues merges two scalar values
+//
+// This function guarantees that the returned value is of the same type as a, so conversion is attempted.
+// If conversion fails, an error is returned
+func convertScalarValues(a reflect.Value, b reflect.Value) (interface{}, error) {
+	// Detect the actual types of both a and b
+	aType := reflect.TypeOf(a.Interface())
+	bType := reflect.TypeOf(b.Interface())
+
+	// Simple case: both values are of the same type, so simply return b, as b always overrides a
+	if aType == bType {
+		return b.Interface(), nil
+	}
+
+	// If b can be converted to a, just convert the value
+	if bType.ConvertibleTo(aType) {
+		return reflect.ValueOf(b.Interface()).Convert(aType).Interface(), nil
+	}
+
+	return nil, fmt.Errorf("Kind mismatch: %s != %s", aType.Kind(), bType.Kind())
 }
