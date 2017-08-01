@@ -31,6 +31,7 @@ func (e *tomlEncoding) MarshalFrom(src map[string]interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// NewTOMLEncoding returns a new TOML encoding instance
 func NewTOMLEncoding(options ...Option) (encoding.Encoding, error) {
 	enc := &tomlEncoding{}
 
