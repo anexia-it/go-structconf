@@ -37,6 +37,27 @@ c = 1024`
 	require.NotNil(t, encoded)
 	require.EqualValues(t, expected, strings.TrimSuffix(string(encoded), "\n"))
 
+	// Source map
+	source = map[string]interface{}{
+		"a": 5,
+		"b": "test b",
+		"c": map[interface{}]interface{}{
+			"d": "test d",
+		},
+	}
+
+	// Expected TOML string
+	expected = `a = 5
+b = "test b"
+
+[c]
+  d = "test d"`
+
+	encoded, err = enc.MarshalFrom(source)
+	require.NoError(t, err)
+	require.NotNil(t, encoded)
+	require.EqualValues(t, expected, strings.TrimSuffix(string(encoded), "\n"))
+
 	source = map[string]interface{}{
 		"title": "TOML Example",
 		"owner": map[string]interface{}{

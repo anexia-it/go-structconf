@@ -7,6 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/anexia-it/go-structconf/encoding"
 	"github.com/hashicorp/go-multierror"
+	"gopkg.in/anexia-it/go-structmapper.v1"
 )
 
 var _ encoding.Encoding = (*tomlEncoding)(nil)
@@ -25,6 +26,11 @@ func (e *tomlEncoding) UnmarshalTo(in []byte, dest map[string]interface{}) error
 func (e *tomlEncoding) MarshalFrom(src map[string]interface{}) ([]byte, error) {
 	buf := bytes.NewBufferString("")
 	enc := toml.NewEncoder(buf)
+	var err error
+	src, err = structmapper.ForceStringMapKeys(src)
+	if err != nil {
+		return nil, err
+	}
 	if err := enc.Encode(src); err != nil {
 		return nil, err
 	}
