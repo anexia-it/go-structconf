@@ -18,7 +18,7 @@ before_install:
   - go get github.com/golang/mock/mockgen
 
 install:
-  - make generate
+  - make
 
 script:
   - GO15VENDOREXPERIMENT=1 go test -v -coverprofile=coverage.txt -covermode=atomic
