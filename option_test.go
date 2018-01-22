@@ -3,18 +3,15 @@ package structconf
 import (
 	"testing"
 
-	"github.com/anexia-it/go-structconf/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
-
-//go:generate mockgen -package=mocks -destination=mocks/storage.go github.com/anexia-it/go-structconf/storage Storage
 
 func TestOptionStorage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	storage := mocks.NewMockStorage(ctrl)
+	storage := NewMockStorage(ctrl)
 
 	c := &TestConfigSimple{}
 
@@ -32,7 +29,7 @@ func TestOptionEncoding(t *testing.T) {
 
 	c := &TestConfigSimple{}
 
-	encoding := mocks.NewMockEncoding(ctrl)
+	encoding := NewMockEncoding(ctrl)
 	conf, err := NewConfiguration(c, OptionEncoding(encoding))
 	require.NoError(t, err)
 	require.NotNil(t, conf)
