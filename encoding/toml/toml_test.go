@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/anexia-it/go-structconf/encoding/toml"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -127,8 +126,6 @@ data = [["gamma", "delta"], [1, 2]]
 host = ["alpha", "omega"]
 `
 	encoded, err = enc.MarshalFrom(source)
-	//spew.Dump(expected)
-	spew.Dump(string(encoded))
 	require.NoError(t, err)
 	require.NotNil(t, encoded)
 
