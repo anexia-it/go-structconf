@@ -28,7 +28,7 @@ generate:
 	@echo "Generating..."
 	@go generate $(PACKAGES)
 
-build: format generate
+build: format
 	@echo "Building packages..."
 	@go install $(GO_BUILDFLAGS) $(PACKAGES)
 
