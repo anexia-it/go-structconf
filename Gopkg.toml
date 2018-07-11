@@ -23,18 +23,19 @@
 
 [[constraint]]
   name = "github.com/BurntSushi/toml"
-
-[[constraint]]
-  name = "github.com/davecgh/go-spew"
+  version = "~0.3.0"
 
 [[constraint]]
   name = "github.com/golang/mock"
+  version = "~1.1.1"
 
 [[constraint]]
   name = "github.com/hashicorp/errwrap"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/hashicorp/go-multierror"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
@@ -42,7 +43,12 @@
 
 [[constraint]]
   name = "gopkg.in/anexia-it/go-structmapper.v1"
-  version = "~1.0.5"
+  version = "~1.0.6"
 
 [[constraint]]
   name = "gopkg.in/yaml.v2"
+  version = "~2.2.1"
+
+[prune]
+  go-tests = true
+  unused-packages = true
