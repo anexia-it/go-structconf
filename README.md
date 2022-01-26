@@ -16,10 +16,8 @@ storages as well as simplified usage of different data encodings.
 Furthermore, it allows default values on config structs to be initialized
 from structs of the same type.
 
-## Install
+## Installing
 
-With a [correctly configured](https://golang.org/doc/install#testing) Go toolchain:
+To use `go-structconf` just add
+`github.com/anexia-it/go-structconf <version>` to your `go.mod` file.
 
-```sh
-go get -u github.com/anexia-it/go-structconf
-```
