@@ -20,4 +20,3 @@ from structs of the same type.
 
 To use `go-structconf` just add
 `github.com/anexia-it/go-structconf <version>` to your `go.mod` file.
-
