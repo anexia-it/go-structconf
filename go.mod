@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/go-multierror v0.0.0-20171204182908-b7773ae21874
 	github.com/stretchr/testify v1.2.2
 	gopkg.in/anexia-it/go-structmapper.v1 v1.0.6
-	gopkg.in/yaml.v2 v2.2.1
+	gopkg.in/yaml.v2 v2.2.8
 )
 
 require (
