@@ -4,7 +4,7 @@ package yaml
 import (
 	"github.com/anexia-it/go-structconf/encoding"
 	"github.com/hashicorp/go-multierror"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var _ encoding.Encoding = (*yamlEncoding)(nil)
